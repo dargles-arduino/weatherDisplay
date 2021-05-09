@@ -1,42 +1,54 @@
 /**
-   StreamHTTPClient.ino
+ * Program: weatherDisplay
+ * Purpose:
+ *   The aim of this program is to contact weather.org for a weather forecast and to 
+ * display it. Then I want to make it possible to contact my own weather server to 
+ * display the latest info from that.
+ * @author: David Argles, d.argles@gmx.com 
+ */
+#define PROGRAM "weatherDisplay"
+#define VERSION "1.0"
+#define BUILD   "09 May 2021 @13:45h"
 
-    Created on: 24.05.2015
-
-*/
-
+// Library includes
 #include <Arduino.h>
-
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-
+//#include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
-ESP8266WiFiMulti WiFiMulti;
+// Includes for our own files
+#include "flashscreen.h"
+#include "myInfo.h"
+#include "terminal.h"
+
+// Instantiate the various classes
+flashscreen       flash;
+terminal          display;
+//ESP8266WiFiMulti  WiFiMulti;
 
 void setup() {
-
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
+  flash.message(PROGRAM, VERSION, BUILD);
+  display.print("\nProgram:\n");
+  display.print(PROGRAM);
 
-  Serial.println();
-  Serial.println();
-  Serial.println();
-
-  for (uint8_t t = 4; t > 0; t--) {
-    Serial.printf("[SETUP] WAIT %d...\n", t);
+  WiFi.hostname(WIFI_HOSTNAME);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  display.print("\nConnecting\n");  
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
     Serial.flush();
     delay(1000);
   }
-
-  WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP("PLUSNET-8FXFF7", "6f7cc3ee6f");
-
+  String ipAddr = "IP:"+WiFi.localIP().toString();
+  display.print(ipAddr);
 }
 
 void loop() {
   // wait for WiFi connection
-  if ((WiFiMulti.run() == WL_CONNECTED)) {
+  if ((WiFi.status() == WL_CONNECTED)) {
 
     WiFiClient client;
     HTTPClient http; //must be declared after WiFiClient for correct destruction order, because used by http.begin(client,...)
