@@ -8,7 +8,7 @@
  */
 #define PROGRAM "weatherDisplay"
 #define VERSION "1.0"
-#define BUILD   "10 May 2021 @15:58h"
+#define BUILD   "11 May 2021 @20:53h"
 
 // Library includes
 #include <Arduino.h>
@@ -60,21 +60,45 @@ void setup() {
 void loop() {
   // Check if a client has connected
   WiFiClient client = webserver.available();
+  yield();
   if (!client){
     return;
   }
-  display.print("\nIncoming:\n");
+  display.print("\nIncoming:\nb:");
 
   client.setTimeout(5000); // default is 1000
 
   // Read the first line of the request
   String req = client.readStringUntil('\r');
   // display.print(req);
+  // Get battery value
   int start = req.indexOf("&bat=");
-  int end = req.indexOf("&temp=");
+  int end = req.indexOf("&ser");
   //Serial.print(index);
   String val = req.substring(start+5,end);
   display.print(val);
+  display.print("V\nt:");
+  // Get temp
+  start = req.indexOf("&temp=");
+  end = req.indexOf("&pres");
+  //Serial.print(index);
+  val = req.substring(start+6,end);
+  display.print(val);
+  display.print("C\np:");
+  // Get pressure
+  start = req.indexOf("&pres=");
+  end = req.indexOf("&hum");
+  //Serial.print(index);
+  val = req.substring(start+6,end);
+  display.print(val);
+  display.print("mB\nh:");
+  // Get humidity
+  start = req.indexOf("&hum=");
+  end = req.indexOf("&err");
+  //Serial.print(index);
+  val = req.substring(start+5,end);
+  display.print(val);
+  display.print("%");
 
   // Read rest of request
   while (client.available()) client.read();
