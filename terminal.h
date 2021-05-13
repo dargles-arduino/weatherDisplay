@@ -47,7 +47,7 @@ class terminal
     u8x8.begin();
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8log.begin(u8x8, U8LOG_WIDTH, U8LOG_HEIGHT, u8log_buffer);
-    u8x8log.setRedrawMode(1);    // 0: Update screen with newline, 1: Update screen for every char  
+    u8x8log.setRedrawMode(0);    // 0: Update screen with newline, 1: Update screen for every char  
     u8x8log.print("=Terminal v");
     u8x8log.print(version);
     u8x8log.print("=");

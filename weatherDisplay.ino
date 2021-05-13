@@ -1,4 +1,4 @@
-/**
+ /**
  * Program: weatherDisplay
  * Purpose:
  *   The aim of this program is to contact weather.org for a weather forecast and to 
@@ -8,7 +8,7 @@
  */
 #define PROGRAM "weatherDisplay"
 #define VERSION "1.0"
-#define BUILD   "11 May 2021 @20:53h"
+#define BUILD   "13 May 2021 @15:55h"
 
 // Library includes
 #include <Arduino.h>
@@ -53,8 +53,20 @@ void setup() {
   }
   webserver.begin();
   display.print("\nServer begun");
-  String ipAddr = "\nIP:"+WiFi.localIP().toString();
+  String ipAddr = "\nIP:"+WiFi.localIP().toString()+"\n";
   display.print(ipAddr);
+}
+
+String extract(String haystack, String start, String end){
+  int first = haystack.indexOf(start);
+  int last = haystack.indexOf(end);
+  //Serial.print(index);
+  String returnVal = "null";
+  if((first>=0 && first<haystack.length())&&(last>=first && last<haystack.length()))returnVal = haystack.substring(first+start.length(), last);
+  // The following two lines integerise the value, rem them out if not required
+  int val = returnVal.toInt();
+  returnVal = String(val);
+  return returnVal;
 }
 
 void loop() {
@@ -70,35 +82,34 @@ void loop() {
 
   // Read the first line of the request
   String req = client.readStringUntil('\r');
-  // display.print(req);
+  //display.print(req);
+  
   // Get battery value
-  int start = req.indexOf("&bat=");
-  int end = req.indexOf("&ser");
-  //Serial.print(index);
-  String val = req.substring(start+5,end);
+  String val = extract(req, "?bat=", "&ser");
+  val = String(val.toFloat()/123);
   display.print(val);
   display.print("V\nt:");
+  
   // Get temp
-  start = req.indexOf("&temp=");
-  end = req.indexOf("&pres");
-  //Serial.print(index);
-  val = req.substring(start+6,end);
+  val = extract(req, "&temp=", "&pres");
   display.print(val);
   display.print("C\np:");
+  
   // Get pressure
-  start = req.indexOf("&pres=");
-  end = req.indexOf("&hum");
-  //Serial.print(index);
-  val = req.substring(start+6,end);
+  val = extract(req, "&pres=", "&hum");
   display.print(val);
   display.print("mB\nh:");
+  
   // Get humidity
-  start = req.indexOf("&hum=");
-  end = req.indexOf("&err");
-  //Serial.print(index);
-  val = req.substring(start+5,end);
+  val = extract(req, "&hum=", "&err");
   display.print(val);
-  display.print("%");
+  display.print("%       ");
+
+  // Get serial no - modulo 100 to keep it sensible
+  val = extract(req, "&serialNo=", "&temp");
+  val = String(val.toInt()%100);
+  display.print(val);
+  display.print("\n");
 
   // Read rest of request
   while (client.available()) client.read();
